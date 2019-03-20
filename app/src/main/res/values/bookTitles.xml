@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="book_titles">
+    <item>The Great Gatsby</item>
+    <item>To Kill a Mockingbird</item>
+    <item>Invisible Man</item>
+    <item>Thinks Fall Apart</item>
+    <item>Heart of Darkness</item>
+    <item>The Sun Also Rises</item>
+    <item>To the Lighthouse</item>
+    <item>The Catcher in the Rye</item>
+    <item>Hamlet</item>
+    <item>In Search of Lost Time</item>
+    </string-array>
+</resources>
