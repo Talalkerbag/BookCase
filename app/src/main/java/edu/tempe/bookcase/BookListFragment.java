@@ -29,22 +29,17 @@ public class BookListFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_booklist,container,false);
         Resources res = getResources();
         String[] bookTitles = res.getStringArray(R.array.book_titles);
-        ListView listView = (ListView) v.findViewById(R.id.bookListView);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(v.getContext(),
+        ListView listView = v.findViewById(R.id.bookListView);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(v.getContext(),
                 android.R.layout.simple_list_item_1, bookTitles);
         listView.setAdapter(adapter);
 
-        listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                bookListener.fragmentClicked(i);
-            }
-
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                return;
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                bookListener.fragmentClicked(position);
             }
         });
-
         return v;
     }
 
