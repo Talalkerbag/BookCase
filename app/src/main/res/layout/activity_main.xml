@@ -9,15 +9,6 @@
     android:configChanges="orientation|keyboardHidden"
     tools:context=".MainActivity">
 
-    <FrameLayout
-        android:id="@+id/container_bookList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"></FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/container_bookDetails"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"></FrameLayout>
 
     <FrameLayout
         android:id="@+id/container_viewPager"

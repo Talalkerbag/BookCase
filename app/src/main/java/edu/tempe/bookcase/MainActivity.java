@@ -16,14 +16,13 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         setContentView(R.layout.activity_main);
         setTitle("Book Case");
 
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             viewPagerFragment = new ViewPagerFragment();
+
             getSupportFragmentManager().beginTransaction()
-                    .remove(bookListFragment)
-                    .remove(bookDetailsFragment)
                     .replace(R.id.container_viewPager, viewPagerFragment)
                     .commit();
-        }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+        }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
             bookListFragment = new BookListFragment();
             bookDetailsFragment = new BookDetailsFragment();
 
