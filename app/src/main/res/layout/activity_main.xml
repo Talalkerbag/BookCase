@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:configChanges="orientation|keyboardHidden"
     tools:context=".MainActivity">
 
     <FrameLayout
@@ -15,6 +16,11 @@
 
     <FrameLayout
         android:id="@+id/container_bookDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"></FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/container_viewPager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"></FrameLayout>
 

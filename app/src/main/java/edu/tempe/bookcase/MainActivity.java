@@ -1,5 +1,6 @@
 package edu.tempe.bookcase;
 
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,14 +16,24 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         setContentView(R.layout.activity_main);
         setTitle("Book Case");
 
-        bookListFragment = new BookListFragment();
-        bookDetailsFragment = new BookDetailsFragment();
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+            viewPagerFragment = new ViewPagerFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .remove(bookListFragment)
+                    .remove(bookDetailsFragment)
+                    .replace(R.id.container_viewPager, viewPagerFragment)
+                    .commit();
+        }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            bookListFragment = new BookListFragment();
+            bookDetailsFragment = new BookDetailsFragment();
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container_bookList, bookListFragment)
-                .replace(R.id.container_bookDetails, bookDetailsFragment)
-                .commit();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container_bookList, bookListFragment)
+                    .replace(R.id.container_bookDetails, bookDetailsFragment)
+                    .commit();
+        }
     }
+
 
     @Override
     public void fragmentClicked(int id) {
