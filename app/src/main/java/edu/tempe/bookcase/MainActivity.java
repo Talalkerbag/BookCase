@@ -2,13 +2,16 @@ package edu.tempe.bookcase;
 
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
 
 public class MainActivity extends AppCompatActivity implements BookListFragment.BookFragmentInterface{
     private BookDetailsFragment bookDetailsFragment;
     private BookListFragment bookListFragment;
-    private ViewPagerFragment viewPagerFragment;
+    private ViewPagerAdapter viewPagerAdapter;
+    private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,12 +19,11 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         setContentView(R.layout.activity_main);
         setTitle("Book Case");
 
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            viewPagerFragment = new ViewPagerFragment();
 
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container_viewPager, viewPagerFragment)
-                    .commit();
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            viewPager = findViewById(R.id.bookPager);
+            viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+            viewPager.setAdapter(viewPagerAdapter);
         }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
             bookListFragment = new BookListFragment();
             bookDetailsFragment = new BookDetailsFragment();
