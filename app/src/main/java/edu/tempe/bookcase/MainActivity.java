@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity implements BookListFragment.BookFragmentInterface{
@@ -25,15 +26,16 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     private BookListFragment bookListFragment;
     private ViewPagerAdapter viewPagerAdapter;
     private ViewPager viewPager;
-    public String JsonString;
+    public static ArrayList<Book> Books = new ArrayList<Book>();
+    public static String JsonData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setTitle("Book Case");
-        JsonString = JsonTask("https://kamorris.com/lab/audlib/booksearch.php");
-        System.out.println(JsonString);
+        FetchData process = new FetchData();
+        process.execute();
 
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             viewPager = findViewById(R.id.bookPager);
@@ -56,48 +58,5 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         Resources res = getResources();
         String[] bookTitles = res.getStringArray(R.array.book_titles);
         bookDetailsFragment.displayBook(bookTitles[id]);
-    }
-
-    private String JsonTask(String given_url) {
-        URL url;
-        StringBuffer response = new StringBuffer();
-        try {
-            url = new URL(given_url);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("invalid url");
-        }
-
-        HttpURLConnection conn = null;
-        try {
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setDoOutput(false);
-            conn.setDoInput(true);
-            conn.setUseCaches(false);
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-
-            // handle the response
-            int status = conn.getResponseCode();
-            if (status != 200) {
-                throw new IOException("Post failed with error code " + status);
-            } else {
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-
-            //Here is your json in string format
-            String responseJSON = response.toString();
-            return responseJSON;
-        }
     }
 }

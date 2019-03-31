@@ -7,8 +7,12 @@ public class Book {
     private int published;
     private String coverURL;
 
-    public Book(){
-
+    public Book(int id, String coverURL, int published, String title, String author){
+        setId(id);
+        setCoverURL(coverURL);
+        setPublished(published);
+        setTitle(title);
+        setAuthor(author);
     }
 
     public void setId(int id) {
