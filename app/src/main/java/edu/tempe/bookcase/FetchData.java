@@ -14,12 +14,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-//setId(id);
-//setCoverURL(coverURL);
-//setPublished(published);
-//setTitle(title);
-//setAuthor(author);
-
 
 public class FetchData extends AsyncTask<Void,Void,Void> {
     String data = "";

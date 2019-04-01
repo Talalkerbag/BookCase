@@ -28,7 +28,10 @@ public class BookListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_booklist,container,false);
         Resources res = getResources();
-        String[] bookTitles = res.getStringArray(R.array.book_titles);
+        String[] bookTitles = new String[MainActivity.Books.size()];
+        for(int i = 0; i < MainActivity.Books.size(); i++){
+            bookTitles[i] = MainActivity.Books.get(i).getTitle();
+        }
         ListView listView = v.findViewById(R.id.bookListView);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(v.getContext(),
                 android.R.layout.simple_list_item_1, bookTitles);

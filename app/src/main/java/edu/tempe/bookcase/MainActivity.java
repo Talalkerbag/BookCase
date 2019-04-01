@@ -56,7 +56,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     @Override
     public void fragmentClicked(int id) {
         Resources res = getResources();
-        String[] bookTitles = res.getStringArray(R.array.book_titles);
-        bookDetailsFragment.displayBook(bookTitles[id]);
+        //String[] bookTitles = res.getStringArray(R.array.book_titles);
+        bookDetailsFragment.displayBook(Books.get(id));
     }
+
+
 }
