@@ -27,7 +27,7 @@ public class BookListFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_booklist,container,false);
-        Resources res = getResources();
+        //Resources res = getResources();
         String[] bookTitles = new String[MainActivity.Books.size()];
         for(int i = 0; i < MainActivity.Books.size(); i++){
             bookTitles[i] = MainActivity.Books.get(i).getTitle();

@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     private ViewPager viewPager;
     public static ArrayList<Book> Books = new ArrayList<Book>();
     public static String JsonData;
+    public static boolean JsonReady = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +38,10 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         setTitle("Book Case");
         FetchData process = new FetchData();
         process.execute();
+
+        while(!JsonReady){
+            //Delay
+        }
 
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             viewPager = findViewById(R.id.bookPager);
@@ -58,6 +64,22 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         Resources res = getResources();
         //String[] bookTitles = res.getStringArray(R.array.book_titles);
         bookDetailsFragment.displayBook(Books.get(id));
+    }
+
+    public void delay(int seconds){
+        final int milliseconds = seconds * 1000;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        System.out.println("XXX");                 //add your code here
+                    }
+                }, milliseconds);
+            }
+        });
     }
 
 

@@ -38,6 +38,8 @@ public class FetchData extends AsyncTask<Void,Void,Void> {
                         Integer.parseInt(JO.getString("published")),JO.getString("title"),
                         JO.getString("author")));
             }
+            System.out.println(MainActivity.Books);
+            MainActivity.JsonReady = true;
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -52,5 +54,6 @@ public class FetchData extends AsyncTask<Void,Void,Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
         MainActivity.JsonData = this.data;
+        MainActivity.JsonReady = true;
     }
 }

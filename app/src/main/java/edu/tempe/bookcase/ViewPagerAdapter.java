@@ -16,9 +16,11 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int i) {
         ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
         Bundle bundle = new Bundle();
-        String[] bookTitles = {"The Great Gatsby","To Kill a Mockingbird", "Invisible Man", "Thinks Fall Apart", "Heart of Darkness" ,
-        "The Sun Also Rises", "To the Lighthouse", "The Catcher in the Rye", "Hamlet","In Search of Lost Time"};
-        bundle.putString("message", bookTitles[i]);
+        bundle.putString("Title", MainActivity.Books.get(i).getTitle());
+        bundle.putString("Author", MainActivity.Books.get(i).getAuthor());
+        bundle.putString("Published", Integer.toString(MainActivity.Books.get(i).getPublished()));
+        bundle.putString("URL", MainActivity.Books.get(i).getCoverURL());
+
         viewPagerFragment.setArguments(bundle);
 
         return viewPagerFragment;
@@ -26,6 +28,6 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        return 10;
+        return 7;
     }
 }
