@@ -40,9 +40,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         process.execute();
 
         while(!JsonReady){
-            //Delay
+            //Delay until process.execute() is finished.
         }
-
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             viewPager = findViewById(R.id.bookPager);
             viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());

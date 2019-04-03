@@ -7,6 +7,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -14,17 +16,15 @@ import android.widget.TextView;
 
 public class ViewPagerFragment extends Fragment {
     String title, author, published, url;
-
-
     public ViewPagerFragment() {
 
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_viewpager,container,false);
-        TextView bookTitle = view.findViewById(R.id.bookTitle);
-        TextView bookAuthor = view.findViewById(R.id.bookAuthor);
-        TextView bookPublished = view.findViewById(R.id.bookPublished);
+        final TextView bookTitle = view.findViewById(R.id.bookTitle);
+        final TextView bookAuthor = view.findViewById(R.id.bookAuthor);
+        final TextView bookPublished = view.findViewById(R.id.bookPublished);
         title = getArguments().getString("Title");
         author = getArguments().getString("Author");
         published = getArguments().getString("Published");
@@ -36,4 +36,5 @@ public class ViewPagerFragment extends Fragment {
                 .execute(url);
         return view;
     }
+
 }
