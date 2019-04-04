@@ -9,7 +9,9 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
@@ -27,6 +29,11 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     private BookListFragment bookListFragment;
     private ViewPagerAdapter viewPagerAdapter;
     private ViewPager viewPager;
+    private ArrayList<ViewPagerFragment> bookArray;
+    private EditText editSearch;
+    private Button btnSearch;
+    private boolean searchValue = false;
+    private ArrayList<Integer> booksToShow = new ArrayList<Integer>();
     public static ArrayList<Book> Books = new ArrayList<Book>();
     public static String JsonData;
     public static boolean JsonReady = false;
@@ -38,13 +45,81 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         setTitle("Book Case");
         FetchData process = new FetchData();
         process.execute();
+        bookArray = new ArrayList<ViewPagerFragment>();
+        editSearch = findViewById(R.id.editSearch);
+        btnSearch = findViewById(R.id.btnSearch);
 
         while(!JsonReady){
             //Delay until process.execute() is finished.
         }
+        btnSearch.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                searchValue = false;
+                String search = editSearch.getText().toString();
+                for (int i = 0; i < Books.size(); i++) {
+                    if (search.equals(Books.get(i).getTitle()) || search.equals(Books.get(i).getAuthor()) || search.equals(Integer.toString(Books.get(i).getPublished()))) {
+                        booksToShow.add(i);
+                        searchValue = true;
+                    }
+                }
+                if (!searchValue) {
+                    bookArray.clear();
+                    for (int i = 0; i < Books.size(); i++) {
+                        Bundle bundle = new Bundle();
+                        ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
+                        bundle.putString("Title", MainActivity.Books.get(i).getTitle());
+                        bundle.putString("Author", MainActivity.Books.get(i).getAuthor());
+                        bundle.putString("Published", Integer.toString(MainActivity.Books.get(i).getPublished()));
+                        bundle.putString("URL", MainActivity.Books.get(i).getCoverURL());
+                        viewPagerFragment.setArguments(bundle);
+                        bookArray.add(viewPagerFragment);
+                    }
+                } else {
+                    bookArray.clear();
+                    for (int i = 0; i < booksToShow.size(); i++) {
+                        Bundle bundle = new Bundle();
+                        ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
+                        bundle.putString("Title", MainActivity.Books.get(booksToShow.get(i)).getTitle());
+                        bundle.putString("Author", MainActivity.Books.get(booksToShow.get(i)).getAuthor());
+                        bundle.putString("Published", Integer.toString(MainActivity.Books.get(booksToShow.get(i)).getPublished()));
+                        bundle.putString("URL", MainActivity.Books.get(booksToShow.get(i)).getCoverURL());
+                        viewPagerFragment.setArguments(bundle);
+                        bookArray.add(viewPagerFragment);
+                    }
+                }
+                viewPager = findViewById(R.id.bookPager);
+                viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), bookArray);
+                viewPager.setAdapter(viewPagerAdapter);
+            }
+        });
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            if(!searchValue){
+                bookArray.clear();
+                for(int i = 0; i < Books.size(); i++){
+                    Bundle bundle = new Bundle();
+                    ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
+                    bundle.putString("Title", MainActivity.Books.get(i).getTitle());
+                    bundle.putString("Author", MainActivity.Books.get(i).getAuthor());
+                    bundle.putString("Published", Integer.toString(MainActivity.Books.get(i).getPublished()));
+                    bundle.putString("URL", MainActivity.Books.get(i).getCoverURL());
+                    viewPagerFragment.setArguments(bundle);
+                    bookArray.add(viewPagerFragment);
+                }
+            }else {
+                bookArray.clear();
+                for (int i = 0; i < booksToShow.size(); i++) {
+                    Bundle bundle = new Bundle();
+                    ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
+                    bundle.putString("Title", MainActivity.Books.get(booksToShow.get(i)).getTitle());
+                    bundle.putString("Author", MainActivity.Books.get(booksToShow.get(i)).getAuthor());
+                    bundle.putString("Published", Integer.toString(MainActivity.Books.get(booksToShow.get(i)).getPublished()));
+                    bundle.putString("URL", MainActivity.Books.get(booksToShow.get(i)).getCoverURL());
+                    viewPagerFragment.setArguments(bundle);
+                    bookArray.add(viewPagerFragment);
+                }
+            }
             viewPager = findViewById(R.id.bookPager);
-            viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+            viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), bookArray);
             viewPager.setAdapter(viewPagerAdapter);
         }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
             bookListFragment = new BookListFragment();

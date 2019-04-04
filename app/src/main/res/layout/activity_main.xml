@@ -10,6 +10,19 @@
     tools:context=".MainActivity">
 
 
+    <EditText
+        android:id="@+id/editSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName" />
+
+    <Button
+        android:id="@+id/btnSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Search" />
+
     <android.support.v4.view.ViewPager
         android:id="@+id/bookPager"
         android:layout_width="match_parent"
