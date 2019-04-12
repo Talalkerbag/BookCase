@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     public static ArrayList<Book> Books = new ArrayList<Book>();
     public static String JsonData;
     public static boolean JsonReady = false;
+    private AudiobookService audiobookService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                             bundle.putString("Author", MainActivity.Books.get(i).getAuthor());
                             bundle.putString("Published", Integer.toString(MainActivity.Books.get(i).getPublished()));
                             bundle.putString("URL", MainActivity.Books.get(i).getCoverURL());
+                            bundle.putString("duration", Integer.toString(MainActivity.Books.get(i).getDuration()));
                             viewPagerFragment.setArguments(bundle);
                             bookArray.add(viewPagerFragment);
                         }
@@ -88,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                             bundle.putString("Author", MainActivity.Books.get(booksToShow.get(i)).getAuthor());
                             bundle.putString("Published", Integer.toString(MainActivity.Books.get(booksToShow.get(i)).getPublished()));
                             bundle.putString("URL", MainActivity.Books.get(booksToShow.get(i)).getCoverURL());
+                            bundle.putString("duration", Integer.toString(MainActivity.Books.get(i).getDuration()));
                             viewPagerFragment.setArguments(bundle);
                             bookArray.add(viewPagerFragment);
                         }
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     bundle.putString("Author", MainActivity.Books.get(i).getAuthor());
                     bundle.putString("Published", Integer.toString(MainActivity.Books.get(i).getPublished()));
                     bundle.putString("URL", MainActivity.Books.get(i).getCoverURL());
+                    bundle.putString("duration", Integer.toString(MainActivity.Books.get(i).getDuration()));
                     viewPagerFragment.setArguments(bundle);
                     bookArray.add(viewPagerFragment);
                 }
@@ -118,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     bundle.putString("Author", MainActivity.Books.get(booksToShow.get(i)).getAuthor());
                     bundle.putString("Published", Integer.toString(MainActivity.Books.get(booksToShow.get(i)).getPublished()));
                     bundle.putString("URL", MainActivity.Books.get(booksToShow.get(i)).getCoverURL());
+                    bundle.putString("duration", Integer.toString(MainActivity.Books.get(i).getDuration()));
                     viewPagerFragment.setArguments(bundle);
                     bookArray.add(viewPagerFragment);
                 }
@@ -159,6 +164,4 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             }
         });
     }
-
-
 }

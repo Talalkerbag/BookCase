@@ -36,7 +36,7 @@ public class FetchData extends AsyncTask<Void,Void,Void> {
                 JSONObject JO = (JSONObject) JA.get(i);
                 MainActivity.Books.add(new Book(Integer.parseInt(JO.getString("book_id")),JO.getString("cover_url"),
                         Integer.parseInt(JO.getString("published")),JO.getString("title"),
-                        JO.getString("author")));
+                        JO.getString("author"),Integer.parseInt(JO.getString("duration"))));
             }
             System.out.println(MainActivity.Books);
             MainActivity.JsonReady = true;
