@@ -6,13 +6,15 @@ public class Book {
     private String author;
     private int published;
     private String coverURL;
+    private int duration;
 
-    public Book(int id, String coverURL, int published, String title, String author){
+    public Book(int id, String coverURL, int published, String title, String author, int duration){
         setId(id);
         setCoverURL(coverURL);
         setPublished(published);
         setTitle(title);
         setAuthor(author);
+        setDuration(duration);
     }
 
     public void setId(int id) {
@@ -35,6 +37,10 @@ public class Book {
         this.author = author;
     }
 
+    public void setDuration(int duration){
+        this.duration = duration;
+    }
+
     public int getId() {
         return id;
     }
@@ -53,5 +59,9 @@ public class Book {
 
     public String getTitle() {
         return title;
+    }
+
+    public int getDuration(){
+        return duration;
     }
 }

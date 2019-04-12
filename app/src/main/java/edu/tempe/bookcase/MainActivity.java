@@ -48,8 +48,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         editSearch = findViewById(R.id.editSearch);
         btnSearch = findViewById(R.id.btnSearch);
 
-
-
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             FetchData process = new FetchData();
             process.execute();
