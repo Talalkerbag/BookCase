@@ -1,5 +1,6 @@
 package edu.tempe.bookcase;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,7 +16,8 @@ import android.widget.TextView;
 
 
 public class ViewPagerFragment extends Fragment {
-    String title, author, published, url;
+    String title, author, url;
+    int id, published, duration;
     public ViewPagerFragment() {
 
     }
@@ -27,11 +29,13 @@ public class ViewPagerFragment extends Fragment {
         final TextView bookPublished = view.findViewById(R.id.bookPublished);
         title = getArguments().getString("Title");
         author = getArguments().getString("Author");
-        published = getArguments().getString("Published");
+        published = getArguments().getInt("Published");
         url = getArguments().getString("URL");
+        id = getArguments().getInt("Id");
+        duration = getArguments().getInt("Duration");
         bookTitle.setText(title);
         bookAuthor.setText(author);
-        bookPublished.setText(published);
+        bookPublished.setText(Integer.toString(published));
         new DownloadImageTask((ImageView) view.findViewById(R.id.bookImage))
                 .execute(url);
         return view;

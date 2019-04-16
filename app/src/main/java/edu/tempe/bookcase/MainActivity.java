@@ -1,30 +1,24 @@
 package edu.tempe.bookcase;
 
-import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
+import edu.temple.audiobookplayer.AudiobookService;
 
-
-public class MainActivity extends AppCompatActivity implements BookListFragment.BookFragmentInterface{
+public class MainActivity extends AppCompatActivity implements BookListFragment.BookFragmentInterface, ServiceConnection {
     private BookDetailsFragment bookDetailsFragment;
     private BookListFragment bookListFragment;
     private ViewPagerAdapter viewPagerAdapter;
@@ -33,28 +27,35 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     private EditText editSearch;
     private Button btnSearch;
     private boolean searchValue = false;
+    private AudiobookService.MediaControlBinder mediaControlBinder;
     private ArrayList<Integer> booksToShow = new ArrayList<Integer>();
     public static ArrayList<Book> Books = new ArrayList<Book>();
     public static String JsonData;
     public static boolean JsonReady = false;
-    private AudiobookService audiobookService;
+    public boolean connected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setTitle("Book Case");
-
         bookArray = new ArrayList<ViewPagerFragment>();
         editSearch = findViewById(R.id.editSearch);
         btnSearch = findViewById(R.id.btnSearch);
-
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             FetchData process = new FetchData();
             process.execute();
             while(!JsonReady){
                 //Delay until process.execute() is finished.
             }
+            new Thread(){
+                public void run(){
+                    Intent intent = new Intent(MainActivity.this, AudiobookService.class);
+                    startService(intent);
+                    bindService(intent, MainActivity.this, BIND_AUTO_CREATE);
+                }
+            }.start();
+
             btnSearch.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     booksToShow.clear();
@@ -75,9 +76,10 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                             ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
                             bundle.putString("Title", MainActivity.Books.get(i).getTitle());
                             bundle.putString("Author", MainActivity.Books.get(i).getAuthor());
-                            bundle.putString("Published", Integer.toString(MainActivity.Books.get(i).getPublished()));
+                            bundle.putInt("Published", MainActivity.Books.get(i).getPublished());
                             bundle.putString("URL", MainActivity.Books.get(i).getCoverURL());
-                            bundle.putString("duration", Integer.toString(MainActivity.Books.get(i).getDuration()));
+                            bundle.putInt("Duration", MainActivity.Books.get(i).getDuration());
+                            bundle.putInt("Id", i);
                             viewPagerFragment.setArguments(bundle);
                             bookArray.add(viewPagerFragment);
                         }
@@ -88,9 +90,10 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                             ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
                             bundle.putString("Title", MainActivity.Books.get(booksToShow.get(i)).getTitle());
                             bundle.putString("Author", MainActivity.Books.get(booksToShow.get(i)).getAuthor());
-                            bundle.putString("Published", Integer.toString(MainActivity.Books.get(booksToShow.get(i)).getPublished()));
+                            bundle.putInt("Published",MainActivity.Books.get(booksToShow.get(i)).getPublished());
                             bundle.putString("URL", MainActivity.Books.get(booksToShow.get(i)).getCoverURL());
-                            bundle.putString("duration", Integer.toString(MainActivity.Books.get(i).getDuration()));
+                            bundle.putInt("Duration", MainActivity.Books.get(i).getDuration());
+                            bundle.putInt("Id", i);
                             viewPagerFragment.setArguments(bundle);
                             bookArray.add(viewPagerFragment);
                         }
@@ -107,9 +110,10 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
                     bundle.putString("Title", MainActivity.Books.get(i).getTitle());
                     bundle.putString("Author", MainActivity.Books.get(i).getAuthor());
-                    bundle.putString("Published", Integer.toString(MainActivity.Books.get(i).getPublished()));
+                    bundle.putInt("Published", MainActivity.Books.get(i).getPublished());
                     bundle.putString("URL", MainActivity.Books.get(i).getCoverURL());
-                    bundle.putString("duration", Integer.toString(MainActivity.Books.get(i).getDuration()));
+                    bundle.putInt("Duration", MainActivity.Books.get(i).getDuration());
+                    bundle.putInt("Id", i);
                     viewPagerFragment.setArguments(bundle);
                     bookArray.add(viewPagerFragment);
                 }
@@ -120,9 +124,10 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
                     bundle.putString("Title", MainActivity.Books.get(booksToShow.get(i)).getTitle());
                     bundle.putString("Author", MainActivity.Books.get(booksToShow.get(i)).getAuthor());
-                    bundle.putString("Published", Integer.toString(MainActivity.Books.get(booksToShow.get(i)).getPublished()));
+                    bundle.putInt("Published", MainActivity.Books.get(booksToShow.get(i)).getPublished());
                     bundle.putString("URL", MainActivity.Books.get(booksToShow.get(i)).getCoverURL());
-                    bundle.putString("duration", Integer.toString(MainActivity.Books.get(i).getDuration()));
+                    bundle.putInt("Duration", MainActivity.Books.get(i).getDuration());
+                    bundle.putInt("Id", i);
                     viewPagerFragment.setArguments(bundle);
                     bookArray.add(viewPagerFragment);
                 }
@@ -130,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             viewPager = findViewById(R.id.bookPager);
             viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), bookArray);
             viewPager.setAdapter(viewPagerAdapter);
+
         }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
             bookListFragment = new BookListFragment();
             bookDetailsFragment = new BookDetailsFragment();
@@ -158,10 +164,37 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        System.out.println("XXX");                 //add your code here
+                        System.out.println("XXX");
                     }
                 }, milliseconds);
             }
         });
+    }
+
+    private Handler progressHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            //msg.what will return an integer value.. number of seconds passed
+            return false;
+        }
+    });
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        mediaControlBinder = (AudiobookService.MediaControlBinder) service;
+        mediaControlBinder.setProgressHandler(progressHandler);
+        //boolean for restriction
+        connected = true;
+        //mediaControlBinder.play(1);
+        //mediaControlBinder.pause(); --to pause
+        //mediaControlBinder.pause(); --to play again after pause
+        //mediaControlBinder.stop(); -- stops it
+        //
+        // mediaControlBinder.seekTo(seconds); --goes to a specific seconds
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+
     }
 }
