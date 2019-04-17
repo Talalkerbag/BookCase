@@ -18,14 +18,14 @@ import android.widget.EditText;
 import java.util.ArrayList;
 import edu.temple.audiobookplayer.AudiobookService;
 
-public class MainActivity extends AppCompatActivity implements BookListFragment.BookFragmentInterface, ServiceConnection {
+public class MainActivity extends AppCompatActivity implements BookListFragment.BookFragmentInterface, ServiceConnection, ViewPagerFragment.OnDataPass {
     private BookDetailsFragment bookDetailsFragment;
     private BookListFragment bookListFragment;
     private ViewPagerAdapter viewPagerAdapter;
     private ViewPager viewPager;
     private ArrayList<ViewPagerFragment> bookArray;
     private EditText editSearch;
-    private Button btnSearch;
+    private Button btnSearch, btnPlay, btnStop;
     private boolean searchValue = false;
     private AudiobookService.MediaControlBinder mediaControlBinder;
     private ArrayList<Integer> booksToShow = new ArrayList<Integer>();
@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     public static String JsonData;
     public static boolean JsonReady = false;
     public boolean connected = false;
+    private int bookId;
+    private boolean playing = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,27 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         bookArray = new ArrayList<ViewPagerFragment>();
         editSearch = findViewById(R.id.editSearch);
         btnSearch = findViewById(R.id.btnSearch);
+        btnPlay = findViewById(R.id.btnPlay);
+        btnStop = findViewById(R.id.btnStop);
+
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mediaControlBinder.stop();
+                playing = false;
+            }
+        });
+
+        btnPlay.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if(!playing){
+                    mediaControlBinder.play(bookId);
+                    playing = true;
+                }else{
+                    mediaControlBinder.pause();
+                }
+            }
+        });
+
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             FetchData process = new FetchData();
             process.execute();
@@ -197,4 +220,14 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     public void onServiceDisconnected(ComponentName name) {
 
     }
+
+    @Override
+    public void onDataPass(int data) {
+        if(playing){
+            mediaControlBinder.stop();
+            playing = false;
+        }
+        bookId = data;
+    }
+
 }

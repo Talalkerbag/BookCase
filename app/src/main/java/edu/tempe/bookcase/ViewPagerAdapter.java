@@ -8,12 +8,14 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 public class ViewPagerAdapter extends FragmentStatePagerAdapter {
     private Context context;
     private ArrayList<ViewPagerFragment> bookArray;
+
     public ViewPagerAdapter(FragmentManager fm, ArrayList<ViewPagerFragment> bookArray) {
         super(fm);
         this.bookArray = bookArray;
@@ -22,6 +24,7 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int i) {
         return bookArray.get(i);
     }
+
 
     @Override
     public int getCount() {

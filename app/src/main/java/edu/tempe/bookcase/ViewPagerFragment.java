@@ -1,6 +1,7 @@
 package edu.tempe.bookcase;
 
 import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -38,7 +39,24 @@ public class ViewPagerFragment extends Fragment {
         bookPublished.setText(Integer.toString(published));
         new DownloadImageTask((ImageView) view.findViewById(R.id.bookImage))
                 .execute(url);
+        passData(id);
         return view;
+    }
+
+    public interface OnDataPass {
+        public void onDataPass(int data);
+    }
+
+    OnDataPass dataPasser;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        dataPasser = (OnDataPass) context;
+    }
+
+    public void passData(int data) {
+        dataPasser.onDataPass(data);
     }
 
 }
