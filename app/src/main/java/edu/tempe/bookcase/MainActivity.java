@@ -33,18 +33,18 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     private ArrayList<ViewPagerFragment> bookArray;
     private EditText editSearch;
     private Button btnSearch, btnPlay, btnStop;
-    private SeekBar mSeekBar;
+    public static SeekBar mSeekBar;
     private boolean searchValue = false;
-    private AudiobookService.MediaControlBinder mediaControlBinder;
+    public static AudiobookService.MediaControlBinder mediaControlBinder;
     private ArrayList<Integer> booksToShow = new ArrayList<Integer>();
     public static ArrayList<Book> Books = new ArrayList<Book>();
     public static String JsonData;
     public static boolean JsonReady = false;
     public boolean connected = false;
     public static int bookId = 1;
-    private boolean playing = false;
+    public static boolean playing = false;
     public static int duration = 0;
-    private boolean startedNew = false;
+    public static boolean startedNew = false;
     private static final String TAG = "Audiobook Service";
     int amoungToupdate = 0;
 
