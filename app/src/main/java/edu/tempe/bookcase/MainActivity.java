@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 if(playing){
                     mediaControlBinder.seekTo(duration * progress / 100);
                 }else if(!startedNew){
-                    mediaControlBinder.play(bookId,duration*progress/100);
+                    mediaControlBinder.play(bookId,duration*progress/600);
                     playing = true;
                 }
             }
