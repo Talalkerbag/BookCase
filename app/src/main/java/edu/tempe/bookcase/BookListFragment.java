@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.content.res.Resources;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,16 +16,20 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import edu.temple.audiobookplayer.AudiobookService;
+
 public class BookListFragment extends Fragment {
     BookFragmentInterface bookListener;
     private ArrayList<Integer> booksToShow = new ArrayList<Integer>();
     private boolean searchValue = false;
+    private static final String TAG = "Audiobook Service";
 
     public interface BookFragmentInterface {
         void fragmentClicked(int id);
@@ -61,6 +66,8 @@ public class BookListFragment extends Fragment {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             bookListener.fragmentClicked(position);
+                            MainActivity.bookId = position + 1;
+                            MainActivity.duration = MainActivity.Books.get(position).getDuration();
                         }
                     });
                 } else {
@@ -75,6 +82,8 @@ public class BookListFragment extends Fragment {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             bookListener.fragmentClicked(position);
+                            MainActivity.bookId = position + 1;
+                            MainActivity.duration = MainActivity.Books.get(position).getDuration();
                         }
                     });
                 }
@@ -93,6 +102,8 @@ public class BookListFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 bookListener.fragmentClicked(position);
+                MainActivity.bookId = position + 1;
+                MainActivity.duration = MainActivity.Books.get(position).getDuration();
             }
         });
         return view;

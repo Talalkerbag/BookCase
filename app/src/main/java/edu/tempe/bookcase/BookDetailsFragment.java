@@ -11,7 +11,9 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -20,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class BookDetailsFragment extends Fragment {
+
     View v;
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.fragment_bookdetails, container, false);
@@ -36,6 +39,8 @@ public class BookDetailsFragment extends Fragment {
         new DownloadImageTask((ImageView) v.findViewById(R.id.bookImage))
                 .execute(bookObject.getCoverURL());
     }
+
+
 }
 
 class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {

@@ -11,10 +11,12 @@ import android.os.Message;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -39,10 +41,11 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     public static String JsonData;
     public static boolean JsonReady = false;
     public boolean connected = false;
-    private int bookId = 1;
+    public static int bookId = 1;
     private boolean playing = false;
-    private int duration = 0;
+    public static int duration = 0;
     private boolean startedNew = false;
+    private static final String TAG = "Audiobook Service";
     int amoungToupdate = 0;
 
     @Override
@@ -53,109 +56,94 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         bookArray = new ArrayList<ViewPagerFragment>();
         editSearch = findViewById(R.id.editSearch);
         btnSearch = findViewById(R.id.btnSearch);
-        btnPlay = findViewById(R.id.btnPlay);
-        btnStop = findViewById(R.id.btnStop);
-        mSeekBar = findViewById(R.id.seekBar);
-        viewPager = findViewById(R.id.bookPager);
 
-        viewPager.addOnPageChangeListener(
-                new ViewPager.OnPageChangeListener() {
-
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        new Thread(){
+            public void run(){
+                Intent intent = new Intent(MainActivity.this, AudiobookService.class);
+                startService(intent);
+                bindService(intent, MainActivity.this, BIND_AUTO_CREATE);
             }
-
-            @Override
-            public void onPageSelected(int position) {
-                startedNew = true;
-                if(playing){
-                    mediaControlBinder.stop();
-                    playing = false;
-                }
-                mSeekBar.setProgress(0);
-                bookId = position + 1;
-                duration = MainActivity.Books.get(position).getDuration();
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-            }
-        });
-
-//        Timer mTimer = new Timer();
-//        mTimer.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        amoungToupdate = progressHandler.obtainMessage().what;
-//                        if (!(amoungToupdate * mSeekBar.getProgress() >= duration)) {
-//                            int p = mSeekBar.getProgress();
-//                            p += 1;
-//                            mSeekBar.setProgress(p);
-//                        }
-//                    }
-//                });
-//            };
-//        }, amoungToupdate);
-
-        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                if(!playing){
-                    startedNew = false;
-                }
-            }
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
-                if(playing){
-                    mediaControlBinder.seekTo(duration * progress / 100);
-                }else if(!startedNew){
-                    mediaControlBinder.play(bookId,duration*progress/600);
-                    playing = true;
-                }
-            }
-        });
-
-        btnStop.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mSeekBar.setProgress(0);
-                mediaControlBinder.stop();
-                playing = false;
-            }
-        });
-
-        btnPlay.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if(!playing){
-                    mediaControlBinder.play(bookId);
-                    playing = true;
-                }else{
-                    mediaControlBinder.pause();
-                }
-            }
-        });
-
+        }.start();
+        playing = false;
+        duration = 0;
+        startedNew = false;
+        bookId = 1;
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             FetchData process = new FetchData();
             process.execute();
             while(!JsonReady){
                 //Delay until process.execute() is finished.
             }
-            new Thread(){
-                public void run(){
-                    Intent intent = new Intent(MainActivity.this, AudiobookService.class);
-                    startService(intent);
-                    bindService(intent, MainActivity.this, BIND_AUTO_CREATE);
+            btnPlay = findViewById(R.id.btnPlay);
+            btnStop = findViewById(R.id.btnStop);
+            mSeekBar = findViewById(R.id.seekBar);
+            viewPager = findViewById(R.id.bookPager);
+
+            viewPager.addOnPageChangeListener(
+                    new ViewPager.OnPageChangeListener() {
+
+                        @Override
+                        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                        }
+
+                        @Override
+                        public void onPageSelected(int position) {
+                            startedNew = true;
+                            if(playing){
+                                mediaControlBinder.stop();
+                                playing = false;
+                            }
+                            mSeekBar.setProgress(0);
+                            bookId = position + 1;
+                            duration = MainActivity.Books.get(position).getDuration();
+                        }
+
+                        @Override
+                        public void onPageScrollStateChanged(int state) {
+                        }
+                    });
+
+
+            mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
                 }
-            }.start();
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                    if(!playing){
+                        startedNew = false;
+                    }
+                }
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
+                    if(playing){
+                        mediaControlBinder.seekTo(duration * progress / 100);
+                        Log.i(TAG, "duration: "+ duration + " -- Progress: " + progress + " -- position: " + duration*progress/100);
+                    }else if(!startedNew){
+                        mediaControlBinder.play(bookId,duration*progress/100);
+                        Log.i(TAG, "duration: "+ duration + " -- Progress: " + progress + " -- position: " + duration*progress/100);
+                    }
+                }
+            });
+
+            btnStop.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    mSeekBar.setProgress(0);
+                    mediaControlBinder.stop();
+                    playing = false;
+                }
+            });
+
+            btnPlay.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    if(!playing){
+                        mediaControlBinder.play(bookId);
+                        playing = true;
+                    }else{
+                        mediaControlBinder.pause();
+                    }
+                }
+            });
 
             btnSearch.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -238,6 +226,50 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             duration = Books.get(0).getDuration();
 
         }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+            btnPlay = findViewById(R.id.btnPlay);
+            btnStop = findViewById(R.id.btnStop);
+            mSeekBar = findViewById(R.id.seekBar);
+
+            mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                }
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                    if(!playing){
+                        startedNew = false;
+                    }
+                }
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
+                    if(playing){
+                        mediaControlBinder.seekTo(duration * progress / 100);
+                        Log.i(TAG, "duration: "+ duration + " -- Progress: " + progress + " -- position: " + duration*progress/100);
+                    }else if(!startedNew){
+                        mediaControlBinder.play(bookId,duration*progress/100);
+                        Log.i(TAG, "duration: "+ duration + " -- Progress: " + progress + " -- position: " + duration*progress/100);
+                    }
+                }
+            });
+
+            btnStop.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    mSeekBar.setProgress(0);
+                    mediaControlBinder.stop();
+                    playing = false;
+                }
+            });
+
+            btnPlay.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    if(!playing){
+                        mediaControlBinder.play(bookId);
+                        playing = true;
+                    }else{
+                        mediaControlBinder.pause();
+                    }
+                }
+            });
             bookListFragment = new BookListFragment();
             bookDetailsFragment = new BookDetailsFragment();
 
