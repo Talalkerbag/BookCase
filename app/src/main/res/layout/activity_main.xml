@@ -52,9 +52,11 @@
 
         <SeekBar
             android:id="@+id/seekBar"
-            android:layout_width="wrap_content"
+            android:layout_width="100dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:max="100"
+            android:min="0"/>
     </LinearLayout>
 
     <android.support.v4.view.ViewPager
