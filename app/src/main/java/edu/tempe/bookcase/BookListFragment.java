@@ -82,6 +82,11 @@ public class BookListFragment extends Fragment {
                             MainActivity.duration = MainActivity.Books.get(MainActivity.Books.get(position).getId()).getDuration();
                         }
                     });
+                    MainActivity.bookId = 1;
+                    MainActivity.duration = MainActivity.Books.get(MainActivity.bookId - 1).getDuration();
+                    MainActivity.mediaControlBinder.stop();
+                    MainActivity.playing = false;
+                    MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
                 } else {
                     String[] bookTitles = new String[MainActivity.booksToShow.size()];
                     for(int i = 0; i < MainActivity.booksToShow.size(); i++){

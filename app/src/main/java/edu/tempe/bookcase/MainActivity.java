@@ -227,30 +227,40 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         for (int i = 0; i < Books.size(); i++) {
                             Bundle bundle = new Bundle();
                             ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
-                            bundle.putString("Title", MainActivity.Books.get(i).getTitle());
-                            bundle.putString("Author", MainActivity.Books.get(i).getAuthor());
-                            bundle.putInt("Published", MainActivity.Books.get(i).getPublished());
-                            bundle.putString("URL", MainActivity.Books.get(i).getCoverURL());
-                            bundle.putInt("Duration", MainActivity.Books.get(i).getDuration());
+                            bundle.putString("Title", Books.get(i).getTitle());
+                            bundle.putString("Author", Books.get(i).getAuthor());
+                            bundle.putInt("Published", Books.get(i).getPublished());
+                            bundle.putString("URL", Books.get(i).getCoverURL());
+                            bundle.putInt("Duration", Books.get(i).getDuration());
                             bundle.putInt("Id", i);
                             viewPagerFragment.setArguments(bundle);
                             bookArray.add(viewPagerFragment);
                         }
+                        bookId = 1;
+                        duration = Books.get(bookId - 1).getDuration();
+                        playing = false;
+                        btnPlay.setBackgroundResource(R.drawable.play_icon);
+                        mediaControlBinder.stop();
                     } else {
                         bookArray.clear();
                         for (int i = 0; i < booksToShow.size(); i++) {
                             Bundle bundle = new Bundle();
                             ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
-                            bundle.putString("Title", MainActivity.Books.get(booksToShow.get(i)).getTitle());
-                            bundle.putString("Author", MainActivity.Books.get(booksToShow.get(i)).getAuthor());
-                            bundle.putInt("Published",MainActivity.Books.get(booksToShow.get(i)).getPublished());
-                            bundle.putString("URL", MainActivity.Books.get(booksToShow.get(i)).getCoverURL());
-                            bundle.putInt("Duration", MainActivity.Books.get(i).getDuration());
+                            bundle.putString("Title", Books.get(booksToShow.get(i)).getTitle());
+                            bundle.putString("Author", Books.get(booksToShow.get(i)).getAuthor());
+                            bundle.putInt("Published",Books.get(booksToShow.get(i)).getPublished());
+                            bundle.putString("URL", Books.get(booksToShow.get(i)).getCoverURL());
+                            bundle.putInt("Duration", Books.get(i).getDuration());
                             bundle.putInt("Id", i);
+                            bookId = i;
+                            duration = Books.get(i).getDuration();
                             viewPagerFragment.setArguments(bundle);
                             bookArray.add(viewPagerFragment);
                         }
                     }
+                    playing = false;
+                    btnPlay.setBackgroundResource(R.drawable.play_icon);
+                    mediaControlBinder.stop();
                     viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), bookArray);
                     viewPager.setAdapter(viewPagerAdapter);
                 }
@@ -260,11 +270,11 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 for(int i = 0; i < Books.size(); i++){
                     Bundle bundle = new Bundle();
                     ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
-                    bundle.putString("Title", MainActivity.Books.get(i).getTitle());
-                    bundle.putString("Author", MainActivity.Books.get(i).getAuthor());
-                    bundle.putInt("Published", MainActivity.Books.get(i).getPublished());
-                    bundle.putString("URL", MainActivity.Books.get(i).getCoverURL());
-                    bundle.putInt("Duration", MainActivity.Books.get(i).getDuration());
+                    bundle.putString("Title", Books.get(i).getTitle());
+                    bundle.putString("Author", Books.get(i).getAuthor());
+                    bundle.putInt("Published", Books.get(i).getPublished());
+                    bundle.putString("URL", Books.get(i).getCoverURL());
+                    bundle.putInt("Duration", Books.get(i).getDuration());
                     bundle.putInt("Id", i);
                     viewPagerFragment.setArguments(bundle);
                     bookArray.add(viewPagerFragment);
@@ -274,11 +284,11 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 for (int i = 0; i < booksToShow.size(); i++) {
                     Bundle bundle = new Bundle();
                     ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
-                    bundle.putString("Title", MainActivity.Books.get(booksToShow.get(i)).getTitle());
-                    bundle.putString("Author", MainActivity.Books.get(booksToShow.get(i)).getAuthor());
-                    bundle.putInt("Published", MainActivity.Books.get(booksToShow.get(i)).getPublished());
-                    bundle.putString("URL", MainActivity.Books.get(booksToShow.get(i)).getCoverURL());
-                    bundle.putInt("Duration", MainActivity.Books.get(i).getDuration());
+                    bundle.putString("Title", Books.get(booksToShow.get(i)).getTitle());
+                    bundle.putString("Author", Books.get(booksToShow.get(i)).getAuthor());
+                    bundle.putInt("Published", Books.get(booksToShow.get(i)).getPublished());
+                    bundle.putString("URL", Books.get(booksToShow.get(i)).getCoverURL());
+                    bundle.putInt("Duration", Books.get(i).getDuration());
                     bundle.putInt("Id", i);
                     viewPagerFragment.setArguments(bundle);
                     bookArray.add(viewPagerFragment);
