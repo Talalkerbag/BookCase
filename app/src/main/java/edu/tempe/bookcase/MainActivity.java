@@ -1,10 +1,16 @@
 package edu.tempe.bookcase;
 
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -26,19 +32,22 @@ import java.util.TimerTask;
 import edu.temple.audiobookplayer.AudiobookService;
 
 public class MainActivity extends AppCompatActivity implements BookListFragment.BookFragmentInterface, ServiceConnection {
+    long queueid;
+    DownloadManager dm;
     private BookDetailsFragment bookDetailsFragment;
     private BookListFragment bookListFragment;
     private ViewPagerAdapter viewPagerAdapter;
     private ViewPager viewPager;
     private ArrayList<ViewPagerFragment> bookArray;
     private EditText editSearch;
-    private Button btnSearch, btnPlay, btnStop;
+    public static Button btnSearch, btnPlay, btnStop, btnDownload;
     public static SeekBar mSeekBar;
-    private boolean searchValue = false;
+    public static boolean searchValue = false;
     public static AudiobookService.MediaControlBinder mediaControlBinder;
-    private ArrayList<Integer> booksToShow = new ArrayList<Integer>();
+    public static ArrayList<Integer> booksToShow = new ArrayList<Integer>();
     public static ArrayList<Book> Books = new ArrayList<Book>();
-    public static ArrayList<BookPlayingInformation> bookPlayingInformation = new ArrayList<BookPlayingInformation>();
+    public static ArrayList<Integer> booksPlaying = new ArrayList<Integer>();
+    public static ArrayList<Integer> booksPlayingProgress = new ArrayList<Integer>();
     public static DownloadedBooks downloadedBooks = new DownloadedBooks();
     public static String JsonData;
     public static boolean JsonReady = false;
@@ -49,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     public static boolean startedNew = false;
     private static final String TAG = "Audiobook Service";
     public static boolean searchedBooks = false;
+    public static boolean pp = false;
 
 
     @Override
@@ -60,25 +70,30 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         editSearch = findViewById(R.id.editSearch);
         btnSearch = findViewById(R.id.btnSearch);
 
-        new Thread(){
-            public void run(){
-                Intent intent = new Intent(MainActivity.this, AudiobookService.class);
-                startService(intent);
-                bindService(intent, MainActivity.this, BIND_AUTO_CREATE);
-            }
-        }.start();
-        playing = false;
-        duration = 0;
-        startedNew = false;
-        bookId = 1;
+        Intent intent = new Intent(MainActivity.this, AudiobookService.class);
+        startService(intent);
+        bindService(intent, MainActivity.this, BIND_AUTO_CREATE);
+
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             FetchData process = new FetchData();
             process.execute();
             while(!JsonReady){
                 //Delay until process.execute() is finished.
             }
+
+            if(!playing){
+                playing = false;
+                duration = Books.get(0).getDuration();
+                startedNew = false;
+                bookId = 1;
+            }else{
+
+            }
+
+
             btnPlay = findViewById(R.id.btnPlay);
             btnStop = findViewById(R.id.btnStop);
+            btnDownload = findViewById(R.id.btnDownload);
             mSeekBar = findViewById(R.id.seekBar);
             viewPager = findViewById(R.id.bookPager);
 
@@ -93,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         public void onPageSelected(int position) {
                             startedNew = true;
                             if(playing){
+                                booksPlayingProgress.set(booksPlaying.indexOf(bookId),mSeekBar.getProgress());
                                 mediaControlBinder.stop();
                                 playing = false;
                                 btnPlay.setBackgroundResource(R.drawable.play_icon);
@@ -132,26 +148,58 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
             btnStop.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
+                    if(booksPlaying.size() > 0 && booksPlayingProgress.size() > 0){
+                        System.out.println("books playing position: " + booksPlaying.indexOf(bookId));
+                        int index = booksPlaying.indexOf(bookId);
+                        booksPlaying.remove(index);
+                        booksPlayingProgress.remove(index);
+                    }
                     mSeekBar.setProgress(0);
                     mediaControlBinder.stop();
                     playing = false;
+                    btnPlay.setBackgroundResource(R.drawable.play_icon);
                 }
             });
 
             btnPlay.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     if(!playing){
-                        mediaControlBinder.play(bookId);
-                        playing = true;
-                        btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                        if(booksPlaying.contains(bookId)){
+                            System.out.println("book in booksPlaying");
+                            int start = (duration*booksPlayingProgress.get(booksPlaying.indexOf(bookId))/100)-10;
+                            System.out.println("starting: " + start);
+                            if(start < 0){
+                                start = 0;
+                            }
+                            mediaControlBinder.play(bookId,start);
+                            playing = true;
+                            btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                        }else{
+                            System.out.println("Added book to booksPlaying");
+                            booksPlaying.add(bookId);
+                            booksPlayingProgress.add(mSeekBar.getProgress());
+                            mediaControlBinder.play(bookId);
+                            playing = true;
+                            btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                        }
                     }else{
                         mediaControlBinder.pause();
-                        btnPlay.setBackgroundResource(R.drawable.play_icon);
+                        if(pp){
+                            btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                            pp = false;
+                        }else{
+                            btnPlay.setBackgroundResource(R.drawable.play_icon);
+                            pp = true;
+                        }
                     }
 
                 }
             });
 
+            btnDownload.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                }
+            });
             btnSearch.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     booksToShow.clear();
@@ -236,6 +284,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             btnPlay = findViewById(R.id.btnPlay);
             btnStop = findViewById(R.id.btnStop);
             mSeekBar = findViewById(R.id.seekBar);
+            btnDownload = findViewById(R.id.btnDownload);
 
             mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
@@ -261,20 +310,56 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
             btnStop.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
+                    if(booksPlaying.size() > 0 && booksPlayingProgress.size() > 0){
+                        System.out.println("books playing position: " + booksPlaying.indexOf(bookId));
+                        int index = booksPlaying.indexOf(bookId);
+                        booksPlaying.remove(index);
+                        booksPlayingProgress.remove(index);
+                    }
                     mSeekBar.setProgress(0);
                     mediaControlBinder.stop();
                     playing = false;
+                    btnPlay.setBackgroundResource(R.drawable.play_icon);
                 }
             });
 
             btnPlay.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     if(!playing){
-                        mediaControlBinder.play(bookId);
-                        playing = true;
+                        if(booksPlaying.contains(bookId)){
+                            System.out.println("book in booksPlaying");
+                            int start = (duration*booksPlayingProgress.get(booksPlaying.indexOf(bookId))/100)-10;
+                            System.out.println("starting: " + start);
+                            if(start < 0){
+                                start = 0;
+                            }
+                            mediaControlBinder.play(bookId,start);
+                            playing = true;
+                            btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                        }else{
+                            System.out.println("Added book to booksPlaying");
+                            booksPlaying.add(bookId);
+                            booksPlayingProgress.add(mSeekBar.getProgress());
+                            mediaControlBinder.play(bookId);
+                            playing = true;
+                            btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                        }
                     }else{
                         mediaControlBinder.pause();
+                        if(pp){
+                            btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                            pp = false;
+                        }else{
+                            btnPlay.setBackgroundResource(R.drawable.play_icon);
+                            pp = true;
+                        }
                     }
+
+                }
+            });
+
+            btnDownload.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
                 }
             });
             bookListFragment = new BookListFragment();

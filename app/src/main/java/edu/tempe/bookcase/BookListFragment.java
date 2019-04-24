@@ -27,9 +27,7 @@ import edu.temple.audiobookplayer.AudiobookService;
 
 public class BookListFragment extends Fragment {
     BookFragmentInterface bookListener;
-    private ArrayList<Integer> booksToShow = new ArrayList<Integer>();
-    private boolean searchValue = false;
-    private boolean searched = false;
+    public boolean searched = false;
     private static final String TAG = "Audiobook Service";
 
     public interface BookFragmentInterface {
@@ -43,20 +41,24 @@ public class BookListFragment extends Fragment {
         final EditText editSearch = view.findViewById(R.id.editSearch);
         Button btnSearch = view.findViewById(R.id.btnSearch);
         System.out.println(MainActivity.Books);
+
+
+
+
         btnSearch.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 searched = true;
-                booksToShow.clear();
-                searchValue = false;
+                MainActivity.booksToShow.clear();
+                MainActivity.searchValue = false;
                 String search = editSearch.getText().toString();
                 for (int i = 0; i < MainActivity.Books.size(); i++) {
                     if (search.equals(MainActivity.Books.get(i).getTitle()) || search.equals(MainActivity.Books.get(i).getAuthor()) || search.equals(Integer.toString(MainActivity.Books.get(i).getPublished()))) {
-                        booksToShow.add(i);
-                        System.out.println(booksToShow);
-                        searchValue = true;
+                        MainActivity.booksToShow.add(i);
+                        System.out.println(MainActivity.booksToShow);
+                        MainActivity.searchValue = true;
                     }
                 }
-                if (!searchValue) {
+                if (!MainActivity.searchValue) {
                     String[] bookTitles = new String[MainActivity.Books.size()];
                     for(int i = 0; i < MainActivity.Books.size(); i++){
                         bookTitles[i] = MainActivity.Books.get(i).getTitle();
@@ -69,8 +71,10 @@ public class BookListFragment extends Fragment {
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             MainActivity.startedNew = true;
                             if(MainActivity.playing){
+                                MainActivity.booksPlayingProgress.set(MainActivity.booksPlaying.indexOf(MainActivity.bookId),MainActivity.mSeekBar.getProgress());
                                 MainActivity.mediaControlBinder.stop();
                                 MainActivity.playing = false;
+                                MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
                             }
                             MainActivity.mSeekBar.setProgress(0);
                             bookListener.fragmentClicked(MainActivity.Books.get(position).getId()-1);
@@ -79,9 +83,9 @@ public class BookListFragment extends Fragment {
                         }
                     });
                 } else {
-                    String[] bookTitles = new String[booksToShow.size()];
-                    for(int i = 0; i < booksToShow.size(); i++){
-                        bookTitles[i] = MainActivity.Books.get(booksToShow.get(i)).getTitle();
+                    String[] bookTitles = new String[MainActivity.booksToShow.size()];
+                    for(int i = 0; i < MainActivity.booksToShow.size(); i++){
+                        bookTitles[i] = MainActivity.Books.get(MainActivity.booksToShow.get(i)).getTitle();
                     }
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(v.getContext(),
                             android.R.layout.simple_list_item_1, bookTitles);
@@ -91,19 +95,46 @@ public class BookListFragment extends Fragment {
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             MainActivity.startedNew = true;
                             if(MainActivity.playing){
+                                MainActivity.booksPlayingProgress.set(MainActivity.booksPlaying.indexOf(MainActivity.bookId),MainActivity.mSeekBar.getProgress());
                                 MainActivity.mediaControlBinder.stop();
                                 MainActivity.playing = false;
+                                MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
                             }
                             MainActivity.mSeekBar.setProgress(0);
-                            bookListener.fragmentClicked(MainActivity.Books.get(booksToShow.get(position)).getId()-1);
-                            MainActivity.bookId = MainActivity.Books.get(booksToShow.get(position)).getId() ;
-                            MainActivity.duration = MainActivity.Books.get(MainActivity.Books.get(booksToShow.get(position)).getId()).getDuration();
+                            bookListener.fragmentClicked(MainActivity.Books.get(MainActivity.booksToShow.get(position)).getId()-1);
+                            MainActivity.bookId = MainActivity.Books.get(MainActivity.booksToShow.get(position)).getId() ;
+                            MainActivity.duration = MainActivity.Books.get(MainActivity.Books.get(MainActivity.booksToShow.get(position)).getId()).getDuration();
                         }
                     });
                 }
             }
         });
-        if(!searched) {
+        if(MainActivity.searchValue){
+            String[] bookTitles = new String[MainActivity.booksToShow.size()];
+            for(int i = 0; i < MainActivity.booksToShow.size(); i++){
+                bookTitles[i] = MainActivity.Books.get(MainActivity.booksToShow.get(i)).getTitle();
+            }
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(view.getContext(),
+                    android.R.layout.simple_list_item_1, bookTitles);
+            listView.setAdapter(adapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    MainActivity.startedNew = true;
+                    if(MainActivity.playing){
+                        MainActivity.booksPlayingProgress.set(MainActivity.booksPlaying.indexOf(MainActivity.bookId),MainActivity.mSeekBar.getProgress());
+                        MainActivity.mediaControlBinder.stop();
+                        MainActivity.playing = false;
+                        MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
+                    }
+                    MainActivity.mSeekBar.setProgress(0);
+                    bookListener.fragmentClicked(MainActivity.Books.get(MainActivity.booksToShow.get(position)).getId()-1);
+                    MainActivity.bookId = MainActivity.Books.get(MainActivity.booksToShow.get(position)).getId() ;
+                    MainActivity.duration = MainActivity.Books.get(MainActivity.Books.get(MainActivity.booksToShow.get(position)).getId()).getDuration();
+                }
+            });
+        }else if(MainActivity.playing){
+            MainActivity.btnPlay.setBackgroundResource(R.drawable.pause_icon);
             String[] bookTitles = new String[MainActivity.Books.size()];
             for (int i = 0; i < MainActivity.Books.size(); i++) {
                 bookTitles[i] = MainActivity.Books.get(i).getTitle();
@@ -112,19 +143,46 @@ public class BookListFragment extends Fragment {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(view.getContext(),
                     android.R.layout.simple_list_item_1, bookTitles);
             listView2.setAdapter(adapter);
-
             listView2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     MainActivity.startedNew = true;
                     if (MainActivity.playing) {
+                        MainActivity.booksPlayingProgress.set(MainActivity.booksPlaying.indexOf(MainActivity.bookId),MainActivity.mSeekBar.getProgress());
                         MainActivity.mediaControlBinder.stop();
                         MainActivity.playing = false;
+                        MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
                     }
                     MainActivity.mSeekBar.setProgress(0);
                     bookListener.fragmentClicked(MainActivity.Books.get(position).getId()-1);
                     MainActivity.bookId = MainActivity.Books.get(position).getId() ;
                     MainActivity.duration = MainActivity.Books.get(MainActivity.Books.get(position).getId()).getDuration();
+                }
+            });
+        }else if(!searched) {
+            String[] bookTitles = new String[MainActivity.Books.size()];
+            for (int i = 0; i < MainActivity.Books.size(); i++) {
+                bookTitles[i] = MainActivity.Books.get(i).getTitle();
+            }
+            ListView listView2 = view.findViewById(R.id.bookListView);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(view.getContext(),
+                    android.R.layout.simple_list_item_1, bookTitles);
+            listView2.setAdapter(adapter);
+            listView2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    MainActivity.startedNew = true;
+                    if (MainActivity.playing) {
+                        MainActivity.booksPlayingProgress.set(MainActivity.booksPlaying.indexOf(MainActivity.bookId),MainActivity.mSeekBar.getProgress());
+                        MainActivity.mediaControlBinder.stop();
+                        MainActivity.playing = false;
+                        MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
+                    }
+                    MainActivity.mSeekBar.setProgress(0);
+                    bookListener.fragmentClicked(MainActivity.Books.get(position).getId()-1);
+                    MainActivity.bookId = MainActivity.Books.get(position).getId() ;
+                    MainActivity.duration = MainActivity.Books.get(position).getDuration();
+
                 }
             });
         }
@@ -136,10 +194,12 @@ public class BookListFragment extends Fragment {
         super.onAttach(context);
         if(context instanceof BookFragmentInterface) {
             bookListener = (BookFragmentInterface) context;
+
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement ColorFragmentInterface");
         }
+
     }
 
     @Override

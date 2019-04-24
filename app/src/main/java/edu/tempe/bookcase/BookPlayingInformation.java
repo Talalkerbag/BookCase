@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 public class BookPlayingInformation {
     private int bookPlaying;
-    private int bookPlayingPosition;
+    private int bookProgress;
 
-    public BookPlayingInformation(){
-
+    public BookPlayingInformation(int id){
+        setBookPlaying(id);
     }
 
     public void setBookPlaying(int id){
@@ -18,12 +18,12 @@ public class BookPlayingInformation {
         return this.bookPlaying;
     }
 
-    public void bookPlayingPosition(int position){
-        this.bookPlayingPosition = position;
+    public void setBookProgress(int position){
+        this.bookProgress = position;
     }
 
-    public int bookPlayingPosition(){
-        return this.bookPlayingPosition;
+    public int getBookProgress(){
+        return this.bookProgress;
     }
 
 

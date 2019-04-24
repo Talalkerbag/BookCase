@@ -26,6 +26,11 @@ public class BookDetailsFragment extends Fragment {
     View v;
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         v = inflater.inflate(R.layout.fragment_bookdetails, container, false);
+        if(MainActivity.playing){
+            displayBook(MainActivity.Books.get(MainActivity.bookId - 1));
+        }else{
+            displayBook(MainActivity.Books.get(0));
+        }
         return v;
     }
 

@@ -13,8 +13,8 @@
 
     <ImageView
         android:id="@+id/bookImage"
-        android:layout_width="278dp"
-        android:layout_height="199dp" />
+        android:layout_width="234dp"
+        android:layout_height="146dp" />
 
     <TextView
         android:id="@+id/bookAuthor"

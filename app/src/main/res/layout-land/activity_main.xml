@@ -69,7 +69,7 @@
     <FrameLayout
         android:id="@+id/container_bookDetails"
         android:layout_width="286dp"
-        android:layout_height="271dp"
+        android:layout_height="241dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/container_bookList"
