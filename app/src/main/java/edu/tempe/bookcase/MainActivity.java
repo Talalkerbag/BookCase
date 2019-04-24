@@ -73,13 +73,18 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         Intent intent = new Intent(MainActivity.this, AudiobookService.class);
         startService(intent);
         bindService(intent, MainActivity.this, BIND_AUTO_CREATE);
+        FetchData process = new FetchData();
+        process.execute();
 
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            FetchData process = new FetchData();
-            process.execute();
             while(!JsonReady){
                 //Delay until process.execute() is finished.
             }
+            btnPlay = findViewById(R.id.btnPlay);
+            btnStop = findViewById(R.id.btnStop);
+            btnDownload = findViewById(R.id.btnDownload);
+            mSeekBar = findViewById(R.id.seekBar);
+            viewPager = findViewById(R.id.bookPager);
 
             if(!playing){
                 playing = false;
@@ -87,15 +92,19 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 startedNew = false;
                 bookId = 1;
             }else{
-
+                bookArray.clear();
+                Bundle bundle = new Bundle();
+                ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
+                bundle.putString("Title", MainActivity.Books.get(bookId - 1).getTitle());
+                bundle.putString("Author", MainActivity.Books.get(bookId - 1).getAuthor());
+                bundle.putInt("Published",MainActivity.Books.get(bookId - 1).getPublished());
+                bundle.putString("URL", MainActivity.Books.get(bookId - 1).getCoverURL());
+                bundle.putInt("Duration", MainActivity.Books.get(bookId - 1).getDuration());
+                bundle.putInt("Id", bookId - 1);
+                viewPagerFragment.setArguments(bundle);
+                bookArray.add(viewPagerFragment);
             }
 
-
-            btnPlay = findViewById(R.id.btnPlay);
-            btnStop = findViewById(R.id.btnStop);
-            btnDownload = findViewById(R.id.btnDownload);
-            mSeekBar = findViewById(R.id.seekBar);
-            viewPager = findViewById(R.id.bookPager);
 
             viewPager.addOnPageChangeListener(
                     new ViewPager.OnPageChangeListener() {
@@ -246,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     viewPager.setAdapter(viewPagerAdapter);
                 }
             });
-            if(!searchValue){
+            if(!searchValue && !playing){
                 bookArray.clear();
                 for(int i = 0; i < Books.size(); i++){
                     Bundle bundle = new Bundle();
@@ -260,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     viewPagerFragment.setArguments(bundle);
                     bookArray.add(viewPagerFragment);
                 }
-            }else {
+            }else if(!playing) {
                 bookArray.clear();
                 for (int i = 0; i < booksToShow.size(); i++) {
                     Bundle bundle = new Bundle();
@@ -278,7 +287,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             viewPager = findViewById(R.id.bookPager);
             viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), bookArray);
             viewPager.setAdapter(viewPagerAdapter);
-            duration = Books.get(0).getDuration();
 
         }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
             btnPlay = findViewById(R.id.btnPlay);
