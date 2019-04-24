@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     public static AudiobookService.MediaControlBinder mediaControlBinder;
     private ArrayList<Integer> booksToShow = new ArrayList<Integer>();
     public static ArrayList<Book> Books = new ArrayList<Book>();
+    public static ArrayList<BookPlayingInformation> bookPlayingInformation = new ArrayList<BookPlayingInformation>();
+    public static DownloadedBooks downloadedBooks = new DownloadedBooks();
     public static String JsonData;
     public static boolean JsonReady = false;
     public boolean connected = false;
@@ -46,7 +48,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     public static int duration = 0;
     public static boolean startedNew = false;
     private static final String TAG = "Audiobook Service";
-    int amoungToupdate = 0;
+    public static boolean searchedBooks = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                             if(playing){
                                 mediaControlBinder.stop();
                                 playing = false;
+                                btnPlay.setBackgroundResource(R.drawable.play_icon);
                             }
                             mSeekBar.setProgress(0);
                             bookId = position + 1;
@@ -139,9 +143,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     if(!playing){
                         mediaControlBinder.play(bookId);
                         playing = true;
+                        btnPlay.setBackgroundResource(R.drawable.pause_icon);
                     }else{
                         mediaControlBinder.pause();
+                        btnPlay.setBackgroundResource(R.drawable.play_icon);
                     }
+
                 }
             });
 

@@ -39,7 +39,9 @@
             android:layout_width="15dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="|>"
+            android:background="@drawable/play_icon"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
             android:textSize="25sp" />
 
         <Button
@@ -47,7 +49,19 @@
             android:layout_width="15dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Stop"
+            android:background="@drawable/stop_icon"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:textSize="25sp" />
+
+        <Button
+            android:id="@+id/btnDownload"
+            android:layout_width="15dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/download_icon"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
             android:textSize="25sp" />
 
         <SeekBar
