@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     private static final String TAG = "Audiobook Service";
     public static boolean searchedBooks = false;
     public static boolean pp = false;
-
+    public boolean doOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,11 +70,14 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         editSearch = findViewById(R.id.editSearch);
         btnSearch = findViewById(R.id.btnSearch);
 
-        Intent intent = new Intent(MainActivity.this, AudiobookService.class);
-        startService(intent);
-        bindService(intent, MainActivity.this, BIND_AUTO_CREATE);
-        FetchData process = new FetchData();
-        process.execute();
+        if(!doOnce) {
+            Intent intent = new Intent(MainActivity.this, AudiobookService.class);
+            startService(intent);
+            bindService(intent, MainActivity.this, BIND_AUTO_CREATE);
+            FetchData process = new FetchData();
+            process.execute();
+            doOnce = true;
+        }
 
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
             while(!JsonReady){
@@ -136,6 +139,10 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
+                    if(!playing){
+                        playing = true;
+                        btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                    }
                 }
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
@@ -158,10 +165,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             btnStop.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     if(booksPlaying.size() > 0 && booksPlayingProgress.size() > 0){
-                        System.out.println("books playing position: " + booksPlaying.indexOf(bookId));
-                        int index = booksPlaying.indexOf(bookId);
-                        booksPlaying.remove(index);
-                        booksPlayingProgress.remove(index);
+                        if(booksPlaying.contains(bookId)){
+                            System.out.println("Books playing saved position: " + booksPlaying.indexOf(bookId));
+                            int index = booksPlaying.indexOf(bookId);
+                            booksPlaying.remove(index);
+                            booksPlayingProgress.remove(index);
+                        }
                     }
                     mSeekBar.setProgress(0);
                     mediaControlBinder.stop();
@@ -174,9 +183,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 public void onClick(View v) {
                     if(!playing){
                         if(booksPlaying.contains(bookId)){
-                            System.out.println("book in booksPlaying");
+                            System.out.println("Book in booksPlaying");
                             int start = (duration*booksPlayingProgress.get(booksPlaying.indexOf(bookId))/100)-10;
-                            System.out.println("starting: " + start);
+                            System.out.println("Starting at progress: " + start);
                             if(start < 0){
                                 start = 0;
                             }
@@ -241,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         playing = false;
                         btnPlay.setBackgroundResource(R.drawable.play_icon);
                         mediaControlBinder.stop();
+                        mSeekBar.setProgress(0);
                     } else {
                         bookArray.clear();
                         for (int i = 0; i < booksToShow.size(); i++) {
@@ -261,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     playing = false;
                     btnPlay.setBackgroundResource(R.drawable.play_icon);
                     mediaControlBinder.stop();
+                    mSeekBar.setProgress(0);
                     viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), bookArray);
                     viewPager.setAdapter(viewPagerAdapter);
                 }
@@ -307,6 +318,10 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
+                    if(!playing){
+                        playing = true;
+                        btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                    }
                 }
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
@@ -329,10 +344,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             btnStop.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     if(booksPlaying.size() > 0 && booksPlayingProgress.size() > 0){
-                        System.out.println("books playing position: " + booksPlaying.indexOf(bookId));
-                        int index = booksPlaying.indexOf(bookId);
-                        booksPlaying.remove(index);
-                        booksPlayingProgress.remove(index);
+                        if(booksPlaying.contains(bookId)){
+                            System.out.println("Books playing saved position: " + booksPlaying.indexOf(bookId));
+                            int index = booksPlaying.indexOf(bookId);
+                            booksPlaying.remove(index);
+                            booksPlayingProgress.remove(index);
+                        }
                     }
                     mSeekBar.setProgress(0);
                     mediaControlBinder.stop();
@@ -345,9 +362,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 public void onClick(View v) {
                     if(!playing){
                         if(booksPlaying.contains(bookId)){
-                            System.out.println("book in booksPlaying");
+                            System.out.println("Book in booksPlaying");
                             int start = (duration*booksPlayingProgress.get(booksPlaying.indexOf(bookId))/100)-10;
-                            System.out.println("starting: " + start);
+                            System.out.println("Starting at progress: " + start);
                             if(start < 0){
                                 start = 0;
                             }

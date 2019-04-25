@@ -86,6 +86,7 @@ public class BookListFragment extends Fragment {
                     MainActivity.duration = MainActivity.Books.get(MainActivity.bookId - 1).getDuration();
                     MainActivity.mediaControlBinder.stop();
                     MainActivity.playing = false;
+                    MainActivity.mSeekBar.setProgress(0);
                     MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
                 } else {
                     String[] bookTitles = new String[MainActivity.booksToShow.size()];
@@ -102,6 +103,7 @@ public class BookListFragment extends Fragment {
                             if(MainActivity.playing){
                                 MainActivity.booksPlayingProgress.set(MainActivity.booksPlaying.indexOf(MainActivity.bookId),MainActivity.mSeekBar.getProgress());
                                 MainActivity.mediaControlBinder.stop();
+                                MainActivity.mSeekBar.setProgress(0);
                                 MainActivity.playing = false;
                                 MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
                             }
@@ -129,6 +131,7 @@ public class BookListFragment extends Fragment {
                     if(MainActivity.playing){
                         MainActivity.booksPlayingProgress.set(MainActivity.booksPlaying.indexOf(MainActivity.bookId),MainActivity.mSeekBar.getProgress());
                         MainActivity.mediaControlBinder.stop();
+                        MainActivity.mSeekBar.setProgress(0);
                         MainActivity.playing = false;
                         MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
                     }
@@ -155,6 +158,7 @@ public class BookListFragment extends Fragment {
                     if (MainActivity.playing) {
                         MainActivity.booksPlayingProgress.set(MainActivity.booksPlaying.indexOf(MainActivity.bookId),MainActivity.mSeekBar.getProgress());
                         MainActivity.mediaControlBinder.stop();
+                        MainActivity.mSeekBar.setProgress(0);
                         MainActivity.playing = false;
                         MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
                     }
@@ -180,6 +184,7 @@ public class BookListFragment extends Fragment {
                     if (MainActivity.playing) {
                         MainActivity.booksPlayingProgress.set(MainActivity.booksPlaying.indexOf(MainActivity.bookId),MainActivity.mSeekBar.getProgress());
                         MainActivity.mediaControlBinder.stop();
+                        MainActivity.mSeekBar.setProgress(0);
                         MainActivity.playing = false;
                         MainActivity.btnPlay.setBackgroundResource(R.drawable.play_icon);
                     }
