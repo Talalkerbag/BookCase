@@ -33,12 +33,19 @@ public class BookDetailsFragment extends Fragment {
         if(MainActivity.playing){
             displayBook(MainActivity.Books.get(MainActivity.bookId - 1));
         }else{
-            displayBook(MainActivity.Books.get(0));
+            if(MainActivity.booksToShow.size()> 1){
+                displayBook(MainActivity.Books.get(MainActivity.booksToShow.get(0)));
+            }else{
+                displayBook(MainActivity.Books.get(0));
+            }
+
         }
         return v;
     }
 
     public void displayBook(Book bookObject){
+        MainActivity.bookId = bookObject.getId();
+        MainActivity.duration = bookObject.getDuration();
         TextView bookTile = v.findViewById(R.id.bookTitle);
         TextView bookAuthor = v.findViewById(R.id.bookAuthor);
         TextView bookPublished = v.findViewById(R.id.bookPublished);
@@ -47,6 +54,13 @@ public class BookDetailsFragment extends Fragment {
         bookPublished.setText(Integer.toString(bookObject.getPublished()));
         new DownloadImageTask((ImageView) v.findViewById(R.id.bookImage))
                 .execute(bookObject.getCoverURL());
+        if(MainActivity.downloadedBooks.isDownloaded(bookObject.getId())){
+            MainActivity.btnDownload.setBackgroundResource(R.drawable.delete_icon);
+            System.out.println("Book " + bookObject.getId() + " is downloaded");
+        }else{
+            MainActivity.btnDownload.setBackgroundResource(R.drawable.download_icon);
+            System.out.println("Book " + bookObject.getId() + " is not downloaded");
+        }
     }
 
 

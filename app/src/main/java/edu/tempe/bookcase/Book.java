@@ -64,4 +64,5 @@ public class Book {
     public int getDuration(){
         return duration;
     }
+
 }

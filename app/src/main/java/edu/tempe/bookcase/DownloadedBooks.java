@@ -14,7 +14,7 @@ public class DownloadedBooks {
     }
 
     public void removeFromDownloads(int id){
-        this.ids.remove(id);
+        this.ids.remove(this.ids.indexOf(id));
     }
 
     public boolean isDownloaded(int id){
