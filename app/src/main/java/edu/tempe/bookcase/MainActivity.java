@@ -1,16 +1,11 @@
 package edu.tempe.bookcase;
 
-import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.database.Cursor;
-import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -22,18 +17,23 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
-import android.util.Log;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
+import android.app.ProgressDialog;
 
 import edu.temple.audiobookplayer.AudiobookService;
 
 public class MainActivity extends AppCompatActivity implements BookListFragment.BookFragmentInterface, ServiceConnection {
-    long queueid;
-    DownloadManager dm;
+    public File saveFile;
+    private ProgressDialog pDialog;
     private BookDetailsFragment bookDetailsFragment;
     private BookListFragment bookListFragment;
     private ViewPagerAdapter viewPagerAdapter;
@@ -70,7 +70,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         editSearch = findViewById(R.id.editSearch);
         btnSearch = findViewById(R.id.btnSearch);
 
-        if(!doOnce) {
+
+        if (!doOnce) {
             Intent intent = new Intent(MainActivity.this, AudiobookService.class);
             startService(intent);
             bindService(intent, MainActivity.this, BIND_AUTO_CREATE);
@@ -79,8 +80,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             doOnce = true;
         }
 
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            while(!JsonReady){
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            while (!JsonReady) {
                 //Delay until process.execute() is finished.
             }
             btnPlay = findViewById(R.id.btnPlay);
@@ -89,18 +91,18 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             mSeekBar = findViewById(R.id.seekBar);
             viewPager = findViewById(R.id.bookPager);
 
-            if(!playing){
+            if (!playing) {
                 playing = false;
                 duration = Books.get(0).getDuration();
                 startedNew = false;
                 bookId = 1;
-            }else{
+            } else {
                 bookArray.clear();
                 Bundle bundle = new Bundle();
                 ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
                 bundle.putString("Title", MainActivity.Books.get(bookId - 1).getTitle());
                 bundle.putString("Author", MainActivity.Books.get(bookId - 1).getAuthor());
-                bundle.putInt("Published",MainActivity.Books.get(bookId - 1).getPublished());
+                bundle.putInt("Published", MainActivity.Books.get(bookId - 1).getPublished());
                 bundle.putString("URL", MainActivity.Books.get(bookId - 1).getCoverURL());
                 bundle.putInt("Duration", MainActivity.Books.get(bookId - 1).getDuration());
                 bundle.putInt("Id", bookId - 1);
@@ -118,16 +120,24 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
                         @Override
                         public void onPageSelected(int position) {
-                            startedNew = true;
-                            if(playing){
-                                booksPlayingProgress.set(booksPlaying.indexOf(bookId),mSeekBar.getProgress());
-                                mediaControlBinder.stop();
-                                playing = false;
-                                btnPlay.setBackgroundResource(R.drawable.play_icon);
-                            }
+                            duration = Books.get(position).getDuration();
                             mSeekBar.setProgress(0);
                             bookId = position + 1;
-                            duration = MainActivity.Books.get(position).getDuration();
+                            startedNew = true;
+                            if (playing) {
+                                mediaControlBinder.stop();
+                                playing = false;
+                                if (booksPlayingProgress.contains(booksPlaying.indexOf(bookId))) {
+                                    booksPlayingProgress.set(booksPlaying.indexOf(bookId), mSeekBar.getProgress());
+                                }
+                                btnPlay.setBackgroundResource(R.drawable.play_icon);
+                            }
+                            if (downloadedBooks.isDownloaded(bookId)) {
+                                btnDownload.setBackgroundResource(R.drawable.delete_icon);
+                            } else {
+                                btnDownload.setBackgroundResource(R.drawable.download_icon);
+                            }
+
                         }
 
                         @Override
@@ -139,39 +149,45 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    if(!playing){
+                    if (!playing) {
                         playing = true;
                         btnPlay.setBackgroundResource(R.drawable.pause_icon);
                     }
                 }
+
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-                    if(!playing){
+                    if (!playing) {
                         startedNew = false;
                     }
                 }
+
                 @Override
-                public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
-                    if(playing){
-                        mediaControlBinder.seekTo(duration * progress / 100);
-                        Log.i(TAG, "duration: "+ duration + " -- Progress: " + progress + " -- position: " + duration*progress/100);
-                    }else if(!startedNew){
-                        mediaControlBinder.play(bookId,duration*progress/100);
-                        Log.i(TAG, "duration: "+ duration + " -- Progress: " + progress + " -- position: " + duration*progress/100);
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (fromUser) {
+                        if (playing) {
+                            mediaControlBinder.seekTo((int) ((double) duration * progress / 100));
+                            Log.i(TAG, "duration: " + duration + " -- Progress: " + progress + " -- position: " + duration * progress / 100);
+                        } else if (!startedNew) {
+                            mediaControlBinder.play(bookId, (int) ((double) duration * progress / 100));
+                            Log.i(TAG, "duration: " + duration + " -- Progress: " + progress + " -- position: " + duration * progress / 100);
+                        }
                     }
+
                 }
             });
 
             btnStop.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    if(booksPlaying.size() > 0 && booksPlayingProgress.size() > 0){
-                        if(booksPlaying.contains(bookId)){
+                    if (booksPlaying.size() > 0 && booksPlayingProgress.size() > 0) {
+                        if (booksPlaying.contains(bookId)) {
                             System.out.println("Books playing saved position: " + booksPlaying.indexOf(bookId));
                             int index = booksPlaying.indexOf(bookId);
                             booksPlaying.remove(index);
                             booksPlayingProgress.remove(index);
                         }
                     }
+                    startedNew = false;
                     mSeekBar.setProgress(0);
                     mediaControlBinder.stop();
                     playing = false;
@@ -181,41 +197,58 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
             btnPlay.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    if(!playing){
-                        if(booksPlaying.contains(bookId)){
-                            System.out.println("Book in booksPlaying");
-                            int start = (duration*booksPlayingProgress.get(booksPlaying.indexOf(bookId))/100)-10;
-                            System.out.println("Starting at progress: " + start);
-                            if(start < 0){
-                                start = 0;
+                    File file = new File(getFilesDir(), String.valueOf(bookId));
+                    if (file.exists()) {
+                        System.out.println("File Exists");
+                        mediaControlBinder.play(file);
+                    } else {
+                        if (!playing) {
+                            if (booksPlaying.contains(bookId)) {
+                                System.out.println("Book in booksPlaying");
+                                int start = (int) ((double) duration * booksPlayingProgress.get(booksPlaying.indexOf(bookId)) / 100);
+                                System.out.println("Starting at progress: " + start);
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                mediaControlBinder.play(bookId, start);
+                                playing = true;
+                                btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                            } else {
+                                System.out.println("Added book to booksPlaying");
+                                booksPlaying.add(bookId);
+                                booksPlayingProgress.add(mSeekBar.getProgress());
+                                mediaControlBinder.play(bookId);
+                                playing = true;
+                                btnPlay.setBackgroundResource(R.drawable.pause_icon);
                             }
-                            mediaControlBinder.play(bookId,start);
-                            playing = true;
-                            btnPlay.setBackgroundResource(R.drawable.pause_icon);
-                        }else{
-                            System.out.println("Added book to booksPlaying");
-                            booksPlaying.add(bookId);
-                            booksPlayingProgress.add(mSeekBar.getProgress());
-                            mediaControlBinder.play(bookId);
-                            playing = true;
-                            btnPlay.setBackgroundResource(R.drawable.pause_icon);
-                        }
-                    }else{
-                        mediaControlBinder.pause();
-                        if(pp){
-                            btnPlay.setBackgroundResource(R.drawable.pause_icon);
-                            pp = false;
-                        }else{
-                            btnPlay.setBackgroundResource(R.drawable.play_icon);
-                            pp = true;
+                        } else {
+                            mediaControlBinder.pause();
+                            if (pp) {
+                                btnPlay.setBackgroundResource(R.drawable.pause_icon);
+                                pp = false;
+                            } else {
+                                btnPlay.setBackgroundResource(R.drawable.play_icon);
+                                pp = true;
+                            }
                         }
                     }
-
                 }
             });
 
             btnDownload.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
+                    File file = new File(getFilesDir(), String.valueOf(bookId));
+                    if (file.exists()) {
+                        String dir = getFilesDir().getAbsolutePath();
+                        File f0 = new File(dir, "" + bookId);
+                        boolean d0 = f0.delete();
+                        Toast.makeText(MainActivity.this, "Deleted: " + Books.get(bookId - 1).getTitle(),
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Downloading: " + Books.get(bookId - 1).getTitle() + " Please wait...",
+                                Toast.LENGTH_LONG).show();
+                        new DownloadFileFromURL().execute(Integer.toString(bookId));
+                    }
                 }
             });
             btnSearch.setOnClickListener(new View.OnClickListener() {
@@ -258,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                             ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
                             bundle.putString("Title", Books.get(booksToShow.get(i)).getTitle());
                             bundle.putString("Author", Books.get(booksToShow.get(i)).getAuthor());
-                            bundle.putInt("Published",Books.get(booksToShow.get(i)).getPublished());
+                            bundle.putInt("Published", Books.get(booksToShow.get(i)).getPublished());
                             bundle.putString("URL", Books.get(booksToShow.get(i)).getCoverURL());
                             bundle.putInt("Duration", Books.get(i).getDuration());
                             bundle.putInt("Id", i);
@@ -276,9 +309,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     viewPager.setAdapter(viewPagerAdapter);
                 }
             });
-            if(!searchValue && !playing){
+            if (!searchValue && !playing) {
                 bookArray.clear();
-                for(int i = 0; i < Books.size(); i++){
+                for (int i = 0; i < Books.size(); i++) {
                     Bundle bundle = new Bundle();
                     ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
                     bundle.putString("Title", Books.get(i).getTitle());
@@ -290,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     viewPagerFragment.setArguments(bundle);
                     bookArray.add(viewPagerFragment);
                 }
-            }else if(!playing) {
+            } else if (!playing) {
                 bookArray.clear();
                 for (int i = 0; i < booksToShow.size(); i++) {
                     Bundle bundle = new Bundle();
@@ -309,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), bookArray);
             viewPager.setAdapter(viewPagerAdapter);
 
-        }else if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+        } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             btnPlay = findViewById(R.id.btnPlay);
             btnStop = findViewById(R.id.btnStop);
             mSeekBar = findViewById(R.id.seekBar);
@@ -318,39 +351,45 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    if(!playing){
+                    if (!playing) {
                         playing = true;
                         btnPlay.setBackgroundResource(R.drawable.pause_icon);
                     }
                 }
+
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-                    if(!playing){
+                    if (!playing) {
                         startedNew = false;
                     }
                 }
+
                 @Override
-                public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
-                    if(playing){
-                        mediaControlBinder.seekTo(duration * progress / 100);
-                        Log.i(TAG, "duration: "+ duration + " -- Progress: " + progress + " -- position: " + duration*progress/100);
-                    }else if(!startedNew){
-                        mediaControlBinder.play(bookId,duration*progress/100);
-                        Log.i(TAG, "duration: "+ duration + " -- Progress: " + progress + " -- position: " + duration*progress/100);
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (fromUser) {
+                        if (playing) {
+                            mediaControlBinder.seekTo((int) ((double) duration * progress / 100));
+                            Log.i(TAG, "duration: " + duration + " -- Progress: " + progress + " -- position: " + duration * progress / 100);
+                        } else if (!startedNew) {
+                            mediaControlBinder.play(bookId, (int) ((double) duration * progress / 100));
+                            Log.i(TAG, "duration: " + duration + " -- Progress: " + progress + " -- position: " + duration * progress / 100);
+                        }
                     }
+
                 }
             });
 
             btnStop.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    if(booksPlaying.size() > 0 && booksPlayingProgress.size() > 0){
-                        if(booksPlaying.contains(bookId)){
+                    if (booksPlaying.size() > 0 && booksPlayingProgress.size() > 0) {
+                        if (booksPlaying.contains(bookId)) {
                             System.out.println("Books playing saved position: " + booksPlaying.indexOf(bookId));
                             int index = booksPlaying.indexOf(bookId);
                             booksPlaying.remove(index);
                             booksPlayingProgress.remove(index);
                         }
                     }
+                    startedNew = false;
                     mSeekBar.setProgress(0);
                     mediaControlBinder.stop();
                     playing = false;
@@ -360,18 +399,18 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
             btnPlay.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    if(!playing){
-                        if(booksPlaying.contains(bookId)){
+                    if (!playing) {
+                        if (booksPlaying.contains(bookId)) {
                             System.out.println("Book in booksPlaying");
-                            int start = (duration*booksPlayingProgress.get(booksPlaying.indexOf(bookId))/100)-10;
+                            int start = (duration * booksPlayingProgress.get(booksPlaying.indexOf(bookId)) / 100) - 10;
                             System.out.println("Starting at progress: " + start);
-                            if(start < 0){
+                            if (start < 0) {
                                 start = 0;
                             }
-                            mediaControlBinder.play(bookId,start);
+                            mediaControlBinder.play(bookId, start);
                             playing = true;
                             btnPlay.setBackgroundResource(R.drawable.pause_icon);
-                        }else{
+                        } else {
                             System.out.println("Added book to booksPlaying");
                             booksPlaying.add(bookId);
                             booksPlayingProgress.add(mSeekBar.getProgress());
@@ -379,12 +418,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                             playing = true;
                             btnPlay.setBackgroundResource(R.drawable.pause_icon);
                         }
-                    }else{
+                    } else {
                         mediaControlBinder.pause();
-                        if(pp){
+                        if (pp) {
                             btnPlay.setBackgroundResource(R.drawable.pause_icon);
                             pp = false;
-                        }else{
+                        } else {
                             btnPlay.setBackgroundResource(R.drawable.play_icon);
                             pp = true;
                         }
@@ -415,7 +454,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         bookDetailsFragment.displayBook(Books.get(id));
     }
 
-    public void delay(int seconds){
+    public void delay(int seconds) {
         final int milliseconds = seconds * 1000;
         runOnUiThread(new Runnable() {
             @Override
@@ -435,6 +474,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         @Override
         public boolean handleMessage(Message msg) {
             //msg.what will return an integer value.. number of seconds passed
+            if (playing) {
+                mSeekBar.setProgress((int) ((double) msg.what / duration * 100));
+            }
             return false;
         }
     });
@@ -451,5 +493,86 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
     }
 
+    public void DownloadAudio(int id) {
+        try {
+            URL url = new URL("https://kamorris.com/lab/audlib/download.php?id=" + id);
+            InputStream inputStream = url.openStream();
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int number;
+            while ((number = inputStream.read(buffer)) > 0) {
+                byteArrayOutputStream.write(buffer, 0, number);
+            }
+            File saveFile = new File(MainActivity.this.getFilesDir(), String.valueOf(id));
+            FileOutputStream fileOutputStream = new FileOutputStream(saveFile);
+            fileOutputStream.write(byteArrayOutputStream.toByteArray());
 
+            Toast.makeText(MainActivity.this, "Downloaded Book: " + Books.get(id - 1).getTitle(),
+                    Toast.LENGTH_LONG).show();
+            downloadedBooks.addToDownloadedBooks(id);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    class DownloadFileFromURL extends AsyncTask<String, String, String> {
+
+        /**
+         * Before starting background thread
+         */
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            System.out.println("Starting download");
+
+            pDialog = new ProgressDialog(MainActivity.this);
+            pDialog.setMessage("Downloading... Please Wait");
+            pDialog.setIndeterminate(false);
+            pDialog.setCancelable(false);
+            pDialog.show();
+            btnDownload.setBackgroundResource(R.drawable.delete_icon);
+        }
+
+        @Override
+        protected void onPostExecute(String file_url) {
+            System.out.println("Downloaded");
+
+            pDialog.dismiss();
+        }
+        /**
+         * Downloading file in background thread
+         */
+        @Override
+        protected String doInBackground(String... id) {
+            int bookId = Integer.parseInt(id[0]);
+
+            System.out.println("Downloading book id: " + bookId);
+
+            try {
+                URL url = new URL("https://kamorris.com/lab/audlib/download.php?id=" + bookId);
+                InputStream inputStream = url.openStream();
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                byte[] buffer = new byte[4096];
+                int number;
+                while ((number = inputStream.read(buffer)) > 0) {
+                    byteArrayOutputStream.write(buffer, 0, number);
+                }
+                saveFile = new File(MainActivity.this.getFilesDir(), id[0]);
+                FileOutputStream fileOutputStream = new FileOutputStream(saveFile);
+                fileOutputStream.write(byteArrayOutputStream.toByteArray());
+
+                downloadedBooks.addToDownloadedBooks(bookId);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+
+    }
 }
