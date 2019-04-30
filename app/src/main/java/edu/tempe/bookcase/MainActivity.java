@@ -134,18 +134,19 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
                         @Override
                         public void onPageSelected(int position) {
+                            if (playing) {
+                                if (booksPlaying.contains(bookId)) {
+                                    booksPlayingProgress.set(booksPlaying.indexOf(bookId), mSeekBar.getProgress());
+                                    System.out.println("saved book " + bookId + " to progress: " + mSeekBar.getProgress());
+                                }
+                                btnPlay.setBackgroundResource(R.drawable.play_icon);
+                                mediaControlBinder.stop();
+                                playing = false;
+                            }
                             duration = Books.get(position).getDuration();
                             mSeekBar.setProgress(0);
                             bookId = position + 1;
                             startedNew = true;
-                            if (playing) {
-                                mediaControlBinder.stop();
-                                playing = false;
-                                if (booksPlayingProgress.contains(booksPlaying.indexOf(bookId))) {
-                                    booksPlayingProgress.set(booksPlaying.indexOf(bookId), mSeekBar.getProgress());
-                                }
-                                btnPlay.setBackgroundResource(R.drawable.play_icon);
-                            }
 
 //                            if (downloadedBooks.isDownloaded(bookId)) {
 //                                btnDownload.setBackgroundResource(R.drawable.delete_icon);
@@ -234,14 +235,14 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     if (!playing) {
                         if (booksPlaying.contains(bookId)) {
                             System.out.println("Book in booksPlaying");
-                            int start = (int) ((double) duration * booksPlayingProgress.get(booksPlaying.indexOf(bookId)) / 100);
+                            int start = (int) ((double) Books.get(bookId-1).getDuration() * booksPlayingProgress.get(booksPlaying.indexOf(bookId)) / 100);
                             System.out.println("Starting at progress: " + start);
                             if (start < 0) {
                                 start = 0;
                             }
                             if (file.exists()) {
                                 System.out.println("File Exists");
-                                mediaControlBinder.play(file);
+                                mediaControlBinder.play(file, start);
                             } else {
                                 mediaControlBinder.play(bookId, start);
                             }
@@ -567,9 +568,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         @Override
         public boolean handleMessage(Message msg) {
             //msg.what will return an integer value.. number of seconds passed
-            if (playing) {
-                mSeekBar.setProgress((int) ((double) msg.what / duration * 100));
-            }
+//            if (playing) {
+//                mSeekBar.setProgress((int) ((double) msg.what / duration * 100));
+//            }
             return false;
         }
     });
